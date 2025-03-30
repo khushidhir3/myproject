@@ -2,6 +2,7 @@ import os
 from flask import Flask, jsonify, request
 import requests
 from dotenv import load_dotenv
+import random
 
 load_dotenv()
 
@@ -61,6 +62,16 @@ def get_stock_data():
 
     stock_info = analyze_stock(symbol)
     return jsonify(stock_info)
+
+@app.route("/api/stock/history")
+def get_stock_history():
+    symbol = request.args.get("symbol", "").upper()
+
+    # Simulated stock price history (replace with real API calls)
+    dates = ["2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-29"]
+    prices = [random.uniform(100, 300) for _ in range(5)]  # Random prices
+
+    return jsonify({"symbol": symbol, "dates": dates, "prices": prices})
 
 if __name__ == '__main__':
     app.run(debug=True)
