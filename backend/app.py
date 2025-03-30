@@ -1,9 +1,39 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify, session
 import yfinance as yf
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"  # Required for session handling
 
+# Investment recommendations logic
+def get_recommendations(goal):
+    """Returns investment options based on goal"""
+    investment_options = {
+        "short-term": ["Stock A", "Stock B", "ETF C"],
+        "long-term": ["Mutual Fund X", "Gold Y", "Index Fund Z"],
+        "retirement": ["Pension Fund A", "Government Bonds B"],
+        "high-risk": ["Crypto A", "Tech Startup B"]
+    }
+    return investment_options.get(goal, ["General Investment Fund"])
+
+@app.route('/api/recommend', methods=['POST'])
+def recommend():
+    """Returns investment recommendations based on user goals."""
+    
+    # Ensure user is logged in
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized access. Please log in."}), 401
+
+    data = request.json
+    goal = data.get("goal", "default")
+
+    # Get recommendations
+    recommendations = get_recommendations(goal)
+    
+    return jsonify({"goal": goal, "suggested_investments": recommendations})
+
+# Stock analysis function
 def analyze_stock(symbol):
     """Fetch stock data using Yahoo Finance API"""
     stock = yf.Ticker(symbol)

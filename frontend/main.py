@@ -3,7 +3,7 @@ import requests
 import matplotlib.pyplot as plt
 from io import BytesIO
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QProgressBar
-from PyQt5.QtGui import QPixmap, QFont, QColor
+from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt, QTimer
 
 class InvestmentApp(QWidget):
@@ -17,7 +17,7 @@ class InvestmentApp(QWidget):
         self.setStyleSheet("background-color: #121212; color: #ffffff;")
 
         layout = QVBoxLayout()
-        
+
         self.symbol_input = QLineEdit(self)
         self.symbol_input.setPlaceholderText("Enter Stock Symbol (e.g., TSLA)")
         self.symbol_input.setStyleSheet(
@@ -47,7 +47,7 @@ class InvestmentApp(QWidget):
         self.progress_bar.setAlignment(Qt.AlignCenter)
         self.progress_bar.setValue(0)
         layout.addWidget(self.progress_bar)
-        
+
         self.chart_label = QLabel(self)  # Label to display the stock chart
         layout.addWidget(self.chart_label)
 
@@ -58,12 +58,12 @@ class InvestmentApp(QWidget):
         if not stock_symbol:
             self.result_label.setText("Please enter a stock symbol!")
             return
-        
+
         self.progress_bar.setValue(0)
         self.progress_timer = QTimer(self)
         self.progress_timer.timeout.connect(self.update_progress)
         self.progress_timer.start(50)
-        
+
         try:
             url = f"http://127.0.0.1:5000/api/stock?symbol={stock_symbol}"  # Flask API URL
             response = requests.get(url)
@@ -80,7 +80,7 @@ class InvestmentApp(QWidget):
                     f"Volume: {data['trading_volume']}"
                 )
                 self.result_label.setText(display_text)
-                
+
                 # Fetch historical stock data and plot chart
                 self.fetchAndPlotChart(stock_symbol)
 
@@ -114,7 +114,7 @@ class InvestmentApp(QWidget):
                 plt.grid(True, color='#555555')
                 plt.gca().set_facecolor('#121212')
                 plt.gcf().set_facecolor('#121212')
-                
+
                 buffer = BytesIO()
                 plt.savefig(buffer, format="png", bbox_inches='tight')
                 buffer.seek(0)
@@ -128,6 +128,7 @@ class InvestmentApp(QWidget):
 
         except Exception as e:
             QMessageBox.warning(self, "API Error", f"Failed to fetch historical data: {str(e)}")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
