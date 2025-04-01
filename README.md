@@ -1,4 +1,4 @@
-# 📊 Automated Investment Insights
+# 📊 Automated Investment Insights Bot
 
 An interactive Python-based stock market insights application with a modern UI using PyQt5 and Matplotlib. Get real-time stock data, price trends, and investment recommendations!
 
