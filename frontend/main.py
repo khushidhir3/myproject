@@ -2,7 +2,7 @@ import sys
 import requests
 import matplotlib.pyplot as plt
 from io import BytesIO
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QProgressBar
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox, QProgressBar, QFrame
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt, QTimer
 
@@ -13,45 +13,59 @@ class InvestmentApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle("Automated Investment Insights")
-        self.setGeometry(100, 100, 900, 500)  # 16:9 ratio
-        self.setStyleSheet("background-color: #121212; color: #ffffff;")
+        self.setGeometry(50, 50, 1200, 600)
+        self.setStyleSheet("background-color: #1A1A2E; color: #E0E0E0;")
 
-        layout = QVBoxLayout()
+        main_layout = QHBoxLayout()
+
+        # Left section for insights
+        left_layout = QVBoxLayout()
 
         self.symbol_input = QLineEdit(self)
         self.symbol_input.setPlaceholderText("Enter Stock Symbol (e.g., TSLA)")
         self.symbol_input.setStyleSheet(
-            "background-color: #1E1E1E; color: #00FFFF; border-radius: 8px; padding: 8px; font-size: 16px;"
+            "background-color: #0F3460; color: #E94560; border-radius: 8px; padding: 8px; font-size: 16px;"
         )
-        layout.addWidget(self.symbol_input)
+        left_layout.addWidget(self.symbol_input)
 
         self.fetch_button = QPushButton("Get Investment Insights", self)
         self.fetch_button.setStyleSheet(
-            "background-color: #6200EA; color: #ffffff; border-radius: 8px; padding: 10px; font-size: 16px;"
-            "border: 2px solid #3700B3;"
+            "background-color: #E94560; color: #ffffff; border-radius: 8px; padding: 10px; font-size: 16px;"
+            "border: 2px solid #D72323;"
         )
         self.fetch_button.clicked.connect(self.fetch_data)
-        layout.addWidget(self.fetch_button)
+        left_layout.addWidget(self.fetch_button)
 
         self.result_label = QLabel("Stock data will be displayed here", self)
         self.result_label.setAlignment(Qt.AlignCenter)
-        self.result_label.setFont(QFont("Arial", 12))
-        layout.addWidget(self.result_label)
+        self.result_label.setFont(QFont("Arial", 14, QFont.Bold))
+        self.result_label.setStyleSheet(
+            "background-color: #16213E; padding: 15px; border-radius: 10px; border: 2px solid #E94560; font-size: 16px;"
+        )
+        left_layout.addWidget(self.result_label)
 
-        # Animated Progress Bar
+        # Progress Bar
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setStyleSheet(
-            "QProgressBar { border: 2px solid #3700B3; border-radius: 8px; background: #1E1E1E; text-align: center; color: #ffffff; }"
-            "QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #6200EA, stop:1 #00FFFF); }"
+            "QProgressBar { border: 2px solid #E94560; border-radius: 8px; background: #0F3460; text-align: center; color: #ffffff; }"
+            "QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #E94560, stop:1 #F08A5D); }"
         )
         self.progress_bar.setAlignment(Qt.AlignCenter)
         self.progress_bar.setValue(0)
-        layout.addWidget(self.progress_bar)
+        left_layout.addWidget(self.progress_bar)
 
-        self.chart_label = QLabel(self)  # Label to display the stock chart
-        layout.addWidget(self.chart_label)
+        # Right section for the chart
+        right_layout = QVBoxLayout()
 
-        self.setLayout(layout)
+        self.chart_label = QLabel(self)
+        self.chart_label.setStyleSheet("background-color: #16213E; padding: 10px; border-radius: 10px; border: 2px solid #E94560;")
+        right_layout.addWidget(self.chart_label)
+
+        # Adding sections to the main layout
+        main_layout.addLayout(left_layout, 3)
+        main_layout.addLayout(right_layout, 2)
+
+        self.setLayout(main_layout)
 
     def fetch_data(self):
         stock_symbol = self.symbol_input.text().strip().upper()
@@ -65,7 +79,7 @@ class InvestmentApp(QWidget):
         self.progress_timer.start(50)
 
         try:
-            url = f"http://127.0.0.1:5000/api/stock?symbol={stock_symbol}"  # Flask API URL
+            url = f"http://127.0.0.1:5000/api/stock?symbol={stock_symbol}"
             response = requests.get(url)
             data = response.json()
 
@@ -73,15 +87,13 @@ class InvestmentApp(QWidget):
                 self.result_label.setText(f"Error: {data['error']}")
             else:
                 display_text = (
-                    f"Symbol: {data['symbol']}\n"
-                    f"Current Price: ${data['current_price']}\n"
-                    f"Change: {data['price_change']}\n"
-                    f"Recommendation: {data['recommendation']}\n"
-                    f"Volume: {data['trading_volume']}"
+                    f"<b>Symbol:</b> {data['symbol']}<br>"
+                    f"<b>Current Price:</b> ${data['current_price']}<br>"
+                    f"<b>Change:</b> {data['price_change']}<br>"
+                    f"<b>Recommendation:</b> {data['recommendation']}<br>"
+                    f"<b>Volume:</b> {data['trading_volume']}"
                 )
                 self.result_label.setText(display_text)
-
-                # Fetch historical stock data and plot chart
                 self.fetchAndPlotChart(stock_symbol)
 
         except Exception as e:
@@ -105,15 +117,15 @@ class InvestmentApp(QWidget):
 
             if dates and prices:
                 plt.figure(figsize=(6, 4))
-                plt.plot(dates, prices, marker='o', linestyle='-', color='#00FFFF')
+                plt.plot(dates, prices, marker='o', linestyle='-', color='#E94560')
                 plt.xlabel("Date", color='white')
                 plt.ylabel("Stock Price ($)", color='white')
                 plt.title(f"Stock Trend for {stock_symbol}", color='white')
                 plt.xticks(rotation=45, color='white')
                 plt.yticks(color='white')
                 plt.grid(True, color='#555555')
-                plt.gca().set_facecolor('#121212')
-                plt.gcf().set_facecolor('#121212')
+                plt.gca().set_facecolor('#1A1A2E')
+                plt.gcf().set_facecolor('#1A1A2E')
 
                 buffer = BytesIO()
                 plt.savefig(buffer, format="png", bbox_inches='tight')
@@ -128,7 +140,6 @@ class InvestmentApp(QWidget):
 
         except Exception as e:
             QMessageBox.warning(self, "API Error", f"Failed to fetch historical data: {str(e)}")
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
